@@ -29,9 +29,10 @@ rl.on('line', (input) => {
 
 const fs = require('fs');
 const filePath = './csv/data.csv';
+const csvtojson = require('csvtojson');
 
 // Example one 
-/* const csvtojson = require('csvtojson');
+/* 
 csvtojson({
   trim: true,
   delimiter: ';',
@@ -48,7 +49,7 @@ csvtojson({
 }) */
 
 // Example three 
-const readline = require('readline');
+/* const readline = require('readline');
 async function processLineByLine() {
   const fileStream = fs.createReadStream(filePath);
 
@@ -62,4 +63,26 @@ async function processLineByLine() {
   }
   writable.end();
 }
-processLineByLine();
+processLineByLine(); */
+
+// Example four
+
+
+const rStream = fs.createReadStream(filePath, {
+  highWaterMark: 10
+});
+
+let data = '';
+
+rStream.on('data', (chunk) => {
+  data = data + chunk.toString();
+})
+
+rStream.on('close', () => {
+  csvtojson({
+    delimiter: ';',
+  })
+    .fromString(data)
+    .then((jsonObj) => fs.writeFileSync("./data.json",JSON.stringify(jsonObj, null, ' ')))
+    .catch((error) => console.log(error.message));
+});
