@@ -24,12 +24,12 @@ var Joi = require("@hapi/joi");
 var app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-function idGenerator(startId) {
+var idGenerator = function (startId) {
     var firstId = startId;
     return function () {
         return firstId++;
     };
-}
+};
 var createId = idGenerator(1);
 var userList = [];
 var getAutoSuggestUsers = function (loginSubstring, limit) {

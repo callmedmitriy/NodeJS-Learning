@@ -7,9 +7,10 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-function idGenerator(startId: number) {
+// Function for id generate
+const idGenerator = (startId: number) => {
   let firstId = startId;
-  return function() {
+  return () => {
     return firstId++;
   }
 }
@@ -23,8 +24,9 @@ interface User {
   isDeleted: boolean,
 }
 
-let userList: Array<User> = [];
+let userList: User[] = [];
 
+// Filter user list by start string and return limit count
 const getAutoSuggestUsers = (loginSubstring: string, limit: number) => {
   let newList = userList.filter( user => user.login.startsWith(loginSubstring));
   newList.sort((first, second) => first.login > second.login ? 1 : -1);
@@ -32,6 +34,7 @@ const getAutoSuggestUsers = (loginSubstring: string, limit: number) => {
   return newList;
 }
 
+// Server-side validation for create/update operations of User entity
 const schema = Joi.object({
   id: Joi.number()
     .integer(),
@@ -41,11 +44,11 @@ const schema = Joi.object({
     .min(3)
     .max(20)
     .required(),
-    
+
   password: Joi.string()
     .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
     .required(),
-    
+
     age: Joi.number()
     .integer()
     .min(4)
@@ -53,14 +56,15 @@ const schema = Joi.object({
     .required(),
 })
 
-app.listen(3000, function () {
+// Server start
+app.listen(3000, () => {
   console.log('App was running and listening port 3000');
 });
 
 app.route('/user/:id')
   .get((req, res) => {
-    let userById: User = userList.filter( user => user.id == req.params.id )[0];
-    let sendData: string = userById ? JSON.stringify(userById, null, ' ') : 'Deleted successfully';
+    const userById: User = userList.filter( user => user.id == req.params.id )[0];
+    const sendData: string = userById ? JSON.stringify(userById, null, ' ') : 'Deleted successfully';
     res.send(sendData);
   })
   .delete((req, res) => {
@@ -72,7 +76,7 @@ app.route('/user/:id')
       }
       return user;
     });
-    let sendData: string = deleted ? 'Deleted successfully' : 'User not founded';
+    const sendData: string = deleted ? 'Deleted successfully' : 'User not founded';
     res.send(sendData);
   })
 
@@ -81,16 +85,16 @@ app.route('/user')
     res.send(userList);
   })
   .post((req,res) => {
-    let params = req.body;
+    const params = req.body;
     const { error, value } = schema.validate(params);
     let sendData;
     if (error) {
 
       sendData = error.message;
       res.status(400);
-      
+
     } else if (params.id) {
-      
+
       userList = userList.map(user => {
         if (user.id == params.id) {
           user = {
@@ -105,11 +109,11 @@ app.route('/user')
 
     } else {
 
-      let newUser: User = {
+      const newUser: User = {
         id: createId(),
         ...params,
         isDeleted: false,
-      }; 
+      };
       userList = [...userList,newUser]
       sendData = 'User created successfully';
 
@@ -118,13 +122,13 @@ app.route('/user')
   })
 
 app.get('/filter',(req,res) => {
-  let starts: string = req.query.starts;
-  let limit: number = req.query.limit || 5; 
+  const starts: string = req.query.starts;
+  const limit: number = req.query.limit || 5;
   res.send(getAutoSuggestUsers(starts,limit));
-}); 
+});
+
 
 // Temp data
- 
 const One: User = {
   id: createId(),
   login: "Name_a",
