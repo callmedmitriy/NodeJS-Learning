@@ -17,13 +17,16 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
             r[k] = a[j];
     return r;
 };
-exports.__esModule = true;
-var express = require("express");
-var bodyParser = require("body-parser");
-var Joi = require("@hapi/joi");
-var app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = __importDefault(require("express"));
+var joi_1 = __importDefault(require("@hapi/joi"));
+var app = express_1.default();
+app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.json());
+// Function for id generate
 var idGenerator = function (startId) {
     var firstId = startId;
     return function () {
@@ -32,41 +35,47 @@ var idGenerator = function (startId) {
 };
 var createId = idGenerator(1);
 var userList = [];
+// Filter user list by start string and return limit count
 var getAutoSuggestUsers = function (loginSubstring, limit) {
     var newList = userList.filter(function (user) { return user.login.startsWith(loginSubstring); });
     newList.sort(function (first, second) { return first.login > second.login ? 1 : -1; });
     newList = newList.slice(0, limit);
     return newList;
 };
-var schema = Joi.object({
-    id: Joi.number()
+// Server-side validation for create/update operations of User entity
+var schema = joi_1.default.object({
+    id: joi_1.default.number()
         .integer(),
-    login: Joi.string()
+    login: joi_1.default.string()
         .alphanum()
         .min(3)
         .max(20)
         .required(),
-    password: Joi.string()
+    password: joi_1.default.string()
         .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
         .required(),
-    age: Joi.number()
+    age: joi_1.default.number()
         .integer()
         .min(4)
         .max(130)
-        .required()
+        .required(),
 });
+// Server start
 app.listen(3000, function () {
+    // tslint:disable-next-line:no-console
     console.log('App was running and listening port 3000');
 });
 app.route('/user/:id')
     .get(function (req, res) {
-    var userById = userList.filter(function (user) { return user.id == req.params.id; })[0];
-    var sendData = userById ? JSON.stringify(userById, null, ' ') : 'Deleted successfully';
-    res.send(sendData);
-})["delete"](function (req, res) {
+    // const userById: User = userList.filter( user => user.id === parseIntreq.params.id )[0];
+    // const sendData: string = userById ? JSON.stringify(userById, null, ' ') : 'Deleted successfully';
+    // res.send(sendData);
+    res.json(userList.find(function (user) { return user.id === parseInt(req.params.id, 10); }));
+})
+    .delete(function (req, res) {
     var deleted = false;
     userList = userList.map(function (user) {
-        if (user.id == req.params.id) {
+        if (user.id === parseInt(req.params.id, 10)) {
             user.isDeleted = true;
             deleted = true;
         }
@@ -89,7 +98,7 @@ app.route('/user')
     }
     else if (params.id) {
         userList = userList.map(function (user) {
-            if (user.id == params.id) {
+            if (user.id === params.id) {
                 user = __assign(__assign({}, user), params);
             }
             return user;
@@ -114,41 +123,41 @@ var One = {
     login: "Name_a",
     password: "somepassword",
     age: 13,
-    isDeleted: false
+    isDeleted: false,
 };
 var Two = {
     id: createId(),
     login: "Name_d",
     password: "pas",
     age: 14,
-    isDeleted: false
+    isDeleted: false,
 };
 var Three = {
     id: createId(),
     login: "Name_b",
     password: "qwerty",
     age: 43,
-    isDeleted: false
+    isDeleted: false,
 };
 var Four = {
     id: createId(),
     login: "Name_c",
     password: "somepassword",
     age: 13,
-    isDeleted: false
+    isDeleted: false,
 };
 var Five = {
     id: createId(),
     login: "Natasha",
     password: "pas",
     age: 14,
-    isDeleted: false
+    isDeleted: false,
 };
 var Six = {
     id: createId(),
     login: "Nanana",
     password: "qwerty",
     age: 43,
-    isDeleted: false
+    isDeleted: false,
 };
 userList = [One, Two, Three, Four, Five, Six];

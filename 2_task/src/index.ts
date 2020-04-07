@@ -1,11 +1,10 @@
-import express = require('express');
-import bodyParser = require('body-parser');
-import Joi = require('@hapi/joi');
+import express from 'express';
+import Joi from '@hapi/joi';
 
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.json());
 
 // Function for id generate
 const idGenerator = (startId: number) => {
@@ -58,19 +57,22 @@ const schema = Joi.object({
 
 // Server start
 app.listen(3000, () => {
+  // tslint:disable-next-line:no-console
   console.log('App was running and listening port 3000');
 });
 
 app.route('/user/:id')
   .get((req, res) => {
-    const userById: User = userList.filter( user => user.id == req.params.id )[0];
-    const sendData: string = userById ? JSON.stringify(userById, null, ' ') : 'Deleted successfully';
-    res.send(sendData);
+    // const userById: User = userList.filter( user => user.id === parseIntreq.params.id )[0];
+    // const sendData: string = userById ? JSON.stringify(userById, null, ' ') : 'Deleted successfully';
+    // res.send(sendData);
+
+    res.json(userList.find(user => user.id === parseInt(req.params.id,10)));
   })
   .delete((req, res) => {
     let deleted: boolean = false;
     userList = userList.map( user => {
-      if (user.id == req.params.id) {
+      if (user.id === parseInt(req.params.id,10)) {
         user.isDeleted = true;
         deleted = true;
       }
@@ -96,7 +98,7 @@ app.route('/user')
     } else if (params.id) {
 
       userList = userList.map(user => {
-        if (user.id == params.id) {
+        if (user.id === params.id) {
           user = {
             ...user,
             ...params
